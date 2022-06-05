@@ -38,25 +38,25 @@ jobs:
         
       run: |
         #### Build a docker container for Cats  push it to ECR
-        #cd cats/
-        cd Chapter02/kubia/
+        cd cats/
+        #cd Chapter02/kubia/
         ls -ltra
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:CATS_$IMAGE_TAG .
         ### Build a docker container for Dogs
-        #cd ../dogs/
-        #docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:DOGS_$IMAGE_TAG .
+        cd ../dogs/
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:DOGS_$IMAGE_TAG .
         # Unit test
         docker run -d -p 80:8080 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:CATS_$IMAGE_TAG
-        #docker run -d -p 80:8080 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        #docker run -d -p 8080:8080 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:$CATS_IMAGE_TAG
         docker ps
         echo "Pause for 10 seconds to let container start"
         sleep 10
         curl localhost  -vvv         
-        #docker run -d -p 8081:80 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:DOGS_$IMAGE_TAG
-        #docker ps
-        #echo "Pause for 10 seconds to let container start"
-        #sleep 10
-        #curl localhost:8081 -vvv           
+        docker run -d -p 8081:80 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:DOGS_$IMAGE_TAG
+        docker ps
+        echo "Pause for 10 seconds to let container start"
+        sleep 10
+        curl localhost:8081 -vvv           
                                                                                         
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:CATS_$IMAGE_TAG
         #echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:CATS_$IMAGE_TAG"
