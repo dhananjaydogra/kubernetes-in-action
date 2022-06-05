@@ -32,8 +32,8 @@ jobs:
       env:
         ECR_REPOSITORY: ddecr-test           # set this to your Amazon ECR repository name
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: v0.1                              
-        IMAGE_TAG_CATS: ${{ github.sha }}
+        #IMAGE_TAG: v0.1                              
+        IMAGE_TAG: ${{ github.sha }}
         IMAGE_TAG_DOGS: ${{ github.sha }} 
         
       run: |
