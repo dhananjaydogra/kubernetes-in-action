@@ -1,29 +1,21 @@
-# 1. Create an ECR repository to store your images.
-#    For example: `aws ecr create-repository --repository-name my-ecr-repo --region us-east-2`.
-#    Replace the value of the `ECR_REPOSITORY` environment variable in the workflow below with your repository's name.
-#    Replace the value of the `AWS_REGION` environment variable in the workflow below with your repository's region.
+name: Deploy to ECR
 
-name: Push to Amazon ECR
-
-on:
+on: 
   push:
-    branches: [master]
-
-env:
-  AWS_REGION: us-east-1                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: ddecr-test           # set this to your Amazon ECR repository name
-#permissions:
-# contents: read
+    branches: [ master ]
 
 jobs:
-  deploy:
-    name: Deploy
+  
+  build:
+    
+    name: Build Image
     runs-on: ubuntu-latest
-   #environment: production
 
+   
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+
+    - name: Check out code
+      uses: actions/checkout@v2
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -33,51 +25,21 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         AWS_REGION: us-east-1
-        
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
+
+    - name: Build, test, tag, and push image to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: v0.1                              
-        IMAGE_TAG_CATS: ${{ github.sha }}
-        IMAGE_TAG_DOGS: ${{ github.sha }}
-        
+        ECR_REPOSITORY: ddecr-test
+        IMAGE_TAG: v0.1
       run: |
-        #### Build a docker container for Cats  push it to ECR
-        #cd cats/
         cd Chapter02/kubia/
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:CATS_$IMAGE_TAG .
-        ### Build a docker container for Dogs
-        #cd ../dogs/
-        #docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:DOGS_$IMAGE_TAG .
+        ls -ltra
+        # Docker build
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         # Unit test
-        docker run -d -p 80:8080-name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        #docker run -d -p 80:8080 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker run -d -p 80:8080 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker ps
         echo "Pause for 10 seconds to let container start"
         sleep 10
-        curl localhost  -vvv         
-        #docker run -d -p 8081:80 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:DOGS_$IMAGE_TAG
-        #docker ps
-        #echo "Pause for 10 seconds to let container start"
-        #sleep 10
-        #curl localhost:8081 -vvv           
-                                                                                        
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:CATS_$IMAGE_TAG
-        #echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:CATS_$IMAGE_TAG"
-
-    # - name: Fill in the new image ID in the Amazon ECS task definition
-      # id: task-def
-      # uses: aws-actions/amazon-ecs-render-task-definition@v1
-      # with:
-        # task-definition: ${{ env.ECS_TASK_DEFINITION }}
-        # container-name: ${{ env.CONTAINER_NAME }}
-        # image: ${{ steps.build-image.outputs.image }}
-
-    # - name: Deploy Amazon ECS task definition
-      # uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      # with:
-        # task-definition: ${{ steps.task-def.outputs.task-definition }}
-        # service: ${{ env.ECS_SERVICE }}
-        # cluster: ${{ env.ECS_CLUSTER }}
-        # wait-for-service-stability: true
+        curl localhost -vvv
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
