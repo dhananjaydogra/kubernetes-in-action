@@ -34,7 +34,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: v0.1                              
         IMAGE_TAG_CATS: ${{ github.sha }}
-        IMAGE_TAG_DOGS: ${{ github.sha }}
+        IMAGE_TAG_DOGS: ${{ github.sha }} 
         
       run: |
         #### Build a docker container for Cats  push it to ECR
